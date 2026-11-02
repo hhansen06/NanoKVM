@@ -5,9 +5,10 @@ name: NanoKVM Package
 # uniquely identified, short-lived test artifact. Release publication is a
 # separate, explicit workflow that calls this one for an existing tag.
 #
-# This workflow does NOT publish to cdn.sipeed.com. Uploading latest.json is what
-# actually offers the update to every device in the field, so that step stays
-# manual and deliberate.
+# This workflow does not publish anything. In this fork the GitHub release that
+# the NanoKVM Release workflow creates is the update source: its latest.json is
+# what offers the update to every device, so publishing stays a separate,
+# deliberate step.
 
 on:
   pull_request:
@@ -279,7 +280,7 @@ jobs:
             if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
               echo "Upload only the inner tarball through NanoKVM's manual offline update UI."
             else
-              echo "Publishing to \`cdn.sipeed.com/nanokvm/\` is a separate manual step."
+              echo "Publish it with the **NanoKVM Release** workflow; a stable release is offered to devices through the online update."
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 

@@ -37,6 +37,8 @@ var (
 	ErrSelfModification = errors.New("administrators cannot disable or demote themselves")
 	ErrSelfDelete       = errors.New("administrators cannot delete themselves")
 	ErrSystemAccount    = errors.New("the device owner account must remain an enabled administrator")
+	ErrExternalManaged  = errors.New("this account is managed by an external directory (LDAP/TACACS+)")
+	ErrLocalAccount     = errors.New("a local account with this username already exists")
 
 	usernamePattern = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9_.-]{0,31}$`)
 )
@@ -50,6 +52,19 @@ type User struct {
 	Permissions        []Permission `json:"permissions"`
 	MustChangePassword bool         `json:"mustChangePassword,omitempty"`
 	SystemAccount      bool         `json:"systemAccount,omitempty"`
+	// Source names the external directory that authenticates this account
+	// ("ldap" or "tacacs"). Empty means a local account with its own password.
+	Source string `json:"source,omitempty"`
+}
+
+// ExternalPasswordHash marks an account that has no local password. It is not
+// a valid bcrypt hash, so a local password check can never succeed against it,
+// also after a downgrade to a release that does not know external accounts.
+const ExternalPasswordHash = "!external"
+
+// IsExternal reports whether the account is authenticated by a directory.
+func (u *User) IsExternal() bool {
+	return u != nil && u.Source != ""
 }
 
 type UserInfo struct {
@@ -58,6 +73,7 @@ type UserInfo struct {
 	Enabled       bool         `json:"enabled"`
 	Permissions   []Permission `json:"permissions"`
 	SystemAccount bool         `json:"systemAccount,omitempty"`
+	Source        string       `json:"source,omitempty"`
 }
 
 type UserPatch struct {
@@ -129,6 +145,7 @@ func (s *Store) List() ([]UserInfo, error) {
 			Enabled:       user.Enabled,
 			Permissions:   clonePermissions(user.Permissions),
 			SystemAccount: user.SystemAccount,
+			Source:        user.Source,
 		})
 	}
 	return users, nil
@@ -154,7 +171,7 @@ func (s *Store) Authenticate(username, password string) (*User, bool, error) {
 		return nil, false, err
 	}
 	user, err := findUser(db.Users, username)
-	if err != nil || !user.Enabled {
+	if err != nil || !user.Enabled || user.IsExternal() {
 		return nil, false, nil
 	}
 
@@ -267,6 +284,18 @@ func (s *Store) Update(actor, username string, patch UserPatch) (previous, updat
 	}
 	previous = cloneUser(&db.Users[index])
 	user := db.Users[index]
+
+	// The directory decides the role and grants of an external account on every
+	// login; an edit here would silently be undone, so only enabling and
+	// disabling (a local block on top of the directory) is accepted.
+	if user.IsExternal() {
+		if (patch.Role != nil && *patch.Role != user.Role) ||
+			(patch.Permissions != nil && !permissionsEqual(NormalizeStoredPermissions(*patch.Permissions), user.Permissions)) {
+			return nil, nil, ErrExternalManaged
+		}
+		patch.Role = nil
+		patch.Permissions = nil
+	}
 
 	if patch.Role != nil && !IsValidRole(*patch.Role) {
 		return nil, nil, errors.New("invalid role")
@@ -391,6 +420,9 @@ func (s *Store) SetPasswordAndRun(username, password string, afterCommit func() 
 	if index < 0 {
 		return nil, ErrUserNotFound
 	}
+	if db.Users[index].IsExternal() {
+		return nil, ErrExternalManaged
+	}
 	previous := *db
 	previous.Users = append([]User(nil), db.Users...)
 	db.Users[index].PasswordHash = string(hash)
@@ -408,6 +440,72 @@ func (s *Store) SetPasswordAndRun(username, password string, afterCommit func() 
 		}
 	}
 	return cloneUser(&db.Users[index]), nil
+}
+
+// UpsertExternal records an account that an external directory has just
+// authenticated. A new account is created enabled; an existing external account
+// takes over the role and grants the directory reported now, but keeps a local
+// disable, so an administrator can block a directory user on this device. A
+// local account with the same name is never taken over: it returns
+// ErrLocalAccount. The account is returned as it was before and after, read
+// under one lock, like Update.
+func (s *Store) UpsertExternal(username, source string, role Role, permissions []Permission) (previous, updated *User, err error) {
+	if err = ValidateUsername(username); err != nil {
+		return nil, nil, err
+	}
+	if source == "" {
+		return nil, nil, errors.New("external source is required")
+	}
+	if !IsValidRole(role) {
+		return nil, nil, errors.New("invalid role")
+	}
+	if err = ValidatePermissions(permissions); err != nil {
+		return nil, nil, err
+	}
+	granted := NormalizeStoredPermissions(permissions)
+
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	db, err := s.loadLocked(true)
+	if err != nil {
+		return nil, nil, err
+	}
+	index := userIndex(db.Users, username)
+	if index < 0 {
+		tokenVersion, tokenErr := newTokenVersion()
+		if tokenErr != nil {
+			return nil, nil, tokenErr
+		}
+		db.Users = append(db.Users, User{
+			Username:     username,
+			PasswordHash: ExternalPasswordHash,
+			Role:         role,
+			Enabled:      true,
+			TokenVersion: tokenVersion,
+			Permissions:  granted,
+			Source:       source,
+		})
+		if err = s.saveLocked(db); err != nil {
+			return nil, nil, err
+		}
+		return nil, cloneUser(&db.Users[len(db.Users)-1]), nil
+	}
+
+	user := &db.Users[index]
+	if !user.IsExternal() {
+		return nil, nil, ErrLocalAccount
+	}
+	previous = cloneUser(user)
+	if user.Role == role && user.Source == source && permissionsEqual(user.Permissions, granted) {
+		return previous, cloneUser(user), nil
+	}
+	user.Role = role
+	user.Source = source
+	user.Permissions = granted
+	if err = s.saveLocked(db); err != nil {
+		return nil, nil, err
+	}
+	return previous, cloneUser(&db.Users[index]), nil
 }
 
 func (s *Store) Revoke(username string) (*User, error) {

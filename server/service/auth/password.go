@@ -30,6 +30,10 @@ func (s *Service) ChangePassword(c *gin.Context) {
 		rsp.ErrRsp(c, -2, "invalid session")
 		return
 	}
+	if account, getErr := authn.DefaultStore.Get(principal.Username); getErr == nil && account.IsExternal() {
+		rsp.ErrRsp(c, -6, "the password of this account is managed by "+account.Source)
+		return
+	}
 	currentPassword, err := utils.DecodeDecrypt(req.CurrentPassword)
 	if err != nil || currentPassword == "" {
 		rsp.ErrRsp(c, -3, "current password is required")
@@ -83,6 +87,9 @@ func changeUserPassword(username, encryptedPassword string) error {
 	user, err := authn.DefaultStore.Get(username)
 	if err != nil {
 		return err
+	}
+	if user.IsExternal() {
+		return authn.ErrExternalManaged
 	}
 	if user.SystemAccount && user.Role == authn.RoleAdmin && user.Enabled {
 		_, err = authn.DefaultStore.SetPasswordAndRun(username, password, func() error {

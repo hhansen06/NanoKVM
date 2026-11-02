@@ -168,7 +168,8 @@ export const Users = () => {
           role: user.role === 'admin' ? 'admin' : 'user',
           enabled: user.enabled !== false,
           permissions: Array.isArray(user.permissions) ? user.permissions : [],
-          systemAccount: user.systemAccount === true
+          systemAccount: user.systemAccount === true,
+          source: user.source === 'ldap' || user.source === 'tacacs' ? user.source : undefined
         }))
       );
     } catch {
@@ -321,7 +322,9 @@ export const Users = () => {
     return t('settings.account.permissions.grantCount', { count: user.permissions.length });
   }
 
-  const isPermissionEditorReadOnly = permissionUser?.role === 'admin';
+  // The directory decides the grants of an external account on every login, so
+  // its editor is a read-only reference like an administrator's.
+  const isPermissionEditorReadOnly = permissionUser?.role === 'admin' || !!permissionUser?.source;
   // An administrator holds every grant, so the read-only reference shows the
   // whole catalog. Its stored set is only what it held as a regular account and
   // says nothing about this role, so reading it back would describe the account
@@ -350,6 +353,9 @@ export const Users = () => {
           const isSelf = user.username === account.username;
           const isProtected = isSelf || user.systemAccount;
           const isAdmin = user.role === 'admin';
+          // Role, grants and password of an external account come from its
+          // directory; only the local block and the removal are editable here.
+          const isExternal = !!user.source;
           return (
             <div
               key={user.username}
@@ -365,6 +371,13 @@ export const Users = () => {
                       {t('settings.account.users.deviceOwner')}
                     </span>
                   )}
+                  {isExternal && (
+                    <Tooltip title={t('settings.account.users.externalHint')}>
+                      <span className="ml-2 shrink-0 rounded bg-blue-900/60 px-1.5 text-xs text-blue-200">
+                        {user.source === 'ldap' ? 'LDAP' : 'TACACS+'}
+                      </span>
+                    </Tooltip>
+                  )}
                 </span>
                 <span className="truncate text-xs text-neutral-500">
                   {describePermissions(user)}
@@ -374,7 +387,7 @@ export const Users = () => {
                 <Select<UserRole>
                   className="w-32"
                   value={user.role}
-                  disabled={isLoading || isProtected}
+                  disabled={isLoading || isProtected || isExternal}
                   options={[
                     { value: 'admin', label: t('settings.account.roles.admin') },
                     { value: 'user', label: t('settings.account.roles.user') }
@@ -410,7 +423,7 @@ export const Users = () => {
                     size="small"
                     icon={<KeyRoundIcon size={14} />}
                     aria-label={t('settings.account.users.resetPassword')}
-                    disabled={isLoading || isProtected}
+                    disabled={isLoading || isProtected || isExternal}
                     onClick={() => setPasswordUser(user.username)}
                   />
                 </Tooltip>

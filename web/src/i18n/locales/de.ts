@@ -688,9 +688,85 @@ const de = {
           updateFailed: 'Aktualisierung fehlgeschlagen. Bitte versuchen Sie es erneut.'
         }
       },
+      externalAuth: {
+        title: 'LDAP / TACACS+',
+        description:
+          'Anmeldung mit Verzeichnis-Konten. Lokale Konten funktionieren immer und werden zuerst geprüft, sodass sich der Geräteeigentümer auch dann anmelden kann, wenn kein Verzeichnis erreichbar ist. Verzeichnis-Konten werden bei der ersten Anmeldung angelegt; Rolle und Berechtigungen werden bei jeder Anmeldung aus dem Verzeichnis übernommen.',
+        loadFailed: 'Einstellungen konnten nicht geladen werden',
+        loadErrorTitle:
+          'Die Konfigurationsdatei konnte nicht gelesen werden; die Verzeichnis-Anmeldung ist bis zum erneuten Speichern aus',
+        saveFailed: 'Einstellungen konnten nicht gespeichert werden',
+        saved: 'Einstellungen gespeichert',
+        save: 'Speichern',
+        order: 'Reihenfolge',
+        sessionHours: 'Sitzungsdauer (Stunden)',
+        sessionHoursHint:
+          'So lange bleibt eine Verzeichnis-Anmeldung gültig. Änderungen im Verzeichnis (Gruppe entfernt, Konto gesperrt) greifen spätestens nach dieser Zeit.',
+        enabled: 'Aktiviert',
+        timeout: 'Timeout (s)',
+        required: 'Pflichtfeld',
+        permissions: 'Berechtigungen',
+        addMapping: 'Regel hinzufügen',
+        defaultMapping: 'Standardrolle',
+        defaultMappingHint:
+          'Gilt, wenn keine Regel passt. Ohne Standardrolle kann sich ein Konto ohne passende Regel nicht anmelden.',
+        secretStored: 'Gespeichert — leer lassen zum Beibehalten (nach Server-Änderung neu eingeben)',
+        noPermissions: 'Keine Berechtigungen',
+        ldap: {
+          urls: 'Server',
+          urlsHint:
+            'ldap://host:389 oder ldaps://host:636. Mehrere Server werden der Reihe nach versucht.',
+          insecureSkipVerify: 'Zertifikat nicht prüfen',
+          insecureSkipVerifyHint: 'Nur zum Testen: akzeptiert jedes Serverzertifikat.',
+          caFile: 'CA-Zertifikatsdatei',
+          caFileHint:
+            'PEM-Datei auf dem Gerät zur Prüfung des Serverzertifikats. Leer = System-CAs.',
+          bindDN: 'Dienstkonto-DN',
+          bindDNHint: 'Zum Suchen von Benutzern und Gruppen. Leer lassen für anonyme Suche.',
+          bindPassword: 'Dienstkonto-Passwort',
+          userFilter: 'Benutzerfilter',
+          userFilterHint:
+            '%s wird durch den Benutzernamen ersetzt. Active Directory: (&(objectClass=user)(sAMAccountName=%s)), OpenLDAP: (uid=%s)',
+          groupAttribute: 'Gruppenattribut',
+          groupSearchFilter: 'Gruppen-Suchfilter',
+          groupSearchFilterHint:
+            'Optional. %u = Benutzername, %d = Benutzer-DN, z.B. (&(objectClass=groupOfNames)(member=%d))',
+          groupMappings: 'Gruppenregeln',
+          groupMappingsHint:
+            'Vollständiger DN oder nur der Gruppenname (CN). Passen mehrere Regeln, gewinnt die stärkste Rolle und die Berechtigungen werden zusammengefasst.'
+        },
+        tacacs: {
+          servers: 'Server',
+          serversHint:
+            'host:port, meist Port 49. Mehrere Server werden der Reihe nach versucht, wenn einer nicht erreichbar ist.',
+          secret: 'Shared Secret',
+          authenType: 'Authentifizierung',
+          service: 'Autorisierungs-Service',
+          serviceHint:
+            'Wird als service=<name> in der Autorisierungsanfrage gesendet; denselben Service auf dem TACACS+-Server konfigurieren.',
+          roleAttribute: 'Rollen-Attribut',
+          roleAttributeHint:
+            'AV-Pair mit der Rolle, z.B. nanokvm-role=admin oder nanokvm-role=user',
+          permissionsAttribute: 'Berechtigungs-Attribut',
+          permissionsAttributeHint:
+            'Kommagetrennte Berechtigungen für die Benutzerrolle, z.B. nanokvm-perms=console.control,power',
+          privLvlMappings: 'Privilege-Level-Regeln',
+          privLvlMappingsHint:
+            'Greifen, wenn der Server kein Rollen-Attribut sendet: Es gilt die Regel mit dem höchsten Level, das den priv-lvl des Benutzers nicht übersteigt.'
+        },
+        testTitle: 'Anmeldung testen',
+        testHint:
+          'Prüft eine Anmeldung gegen ein Verzeichnis mit den obigen (auch ungespeicherten) Einstellungen. Es wird kein Konto angelegt.',
+        testSource: 'Verzeichnis',
+        testBtn: 'Testen',
+        testSuccess: 'Angemeldet als {{username}} mit Rolle {{role}}',
+        testFailed: 'Anmeldung fehlgeschlagen',
+        testRequestFailed: 'Die Testanfrage ist fehlgeschlagen'
+      },
       account: {
         title: 'Konto',
         webAccount: 'Web Konto Name',
+        managedBy: 'Verwaltet über {{source}}',
         password: 'Passwort',
         updateBtn: 'Ändern',
         logoutBtn: 'Abmelden',
@@ -708,6 +784,8 @@ const de = {
           enabled: 'Aktiviert',
           disabled: 'Deaktiviert',
           deviceOwner: 'Geräteeigentümer',
+          externalHint:
+            'Meldet sich über das Verzeichnis an. Rolle, Berechtigungen und Passwort werden dort verwaltet; hier kann das Konto nur gesperrt oder entfernt werden.',
           resetPassword: 'Passwort zurücksetzen',
           delete: 'Löschen',
           deleteConfirm: 'Diesen Benutzer löschen und alle seine Sitzungen widerrufen?',

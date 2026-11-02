@@ -10,7 +10,8 @@ function toAccount(data: any): Account {
   return {
     username: data.username,
     role: data.role === 'admin' ? 'admin' : 'user',
-    permissions: Array.isArray(data.permissions) ? data.permissions : []
+    permissions: Array.isArray(data.permissions) ? data.permissions : [],
+    source: data.source === 'ldap' || data.source === 'tacacs' ? data.source : undefined
   };
 }
 

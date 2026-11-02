@@ -12,7 +12,7 @@
 set -uo pipefail
 
 NEW_TARBALL="${1:-}"
-BASE_URL="${2:-https://cdn.sipeed.com/nanokvm}"
+BASE_URL="${2:-https://github.com/hhansen06/NanoKVM/releases/latest/download}"
 
 if [ -z "$NEW_TARBALL" ] || [ ! -f "$NEW_TARBALL" ]; then
     echo "Usage: $0 <new-tarball> [base-url]" >&2

@@ -1,8 +1,12 @@
 package application
 
 const (
-	StableURL  = "https://cdn.sipeed.com/nanokvm"
-	PreviewURL = "https://cdn.sipeed.com/nanokvm/preview"
+	// This fork publishes its update packages as GitHub release assets:
+	// <base>/latest.json and <base>/nanokvm_<version>.tar.gz resolve to the
+	// newest stable release. GitHub offers no "latest prerelease" URL, so the
+	// preview channel follows the stable one.
+	StableURL  = "https://github.com/hhansen06/NanoKVM/releases/latest/download"
+	PreviewURL = StableURL
 
 	AppDir    = "/kvmapp"
 	BackupDir = "/root/old"

@@ -30,4 +30,7 @@ func authRouter(r *gin.Engine) {
 	admin.PUT("/auth/users/:username", service.UpdateUser)
 	admin.DELETE("/auth/users/:username", service.DeleteUser)
 	admin.POST("/auth/users/:username/password", service.ChangeUserPassword)
+	admin.GET("/auth/external", service.GetExternalAuth)
+	admin.PUT("/auth/external", service.SetExternalAuth)
+	admin.POST("/auth/external/test", service.TestExternalAuth)
 }

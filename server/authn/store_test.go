@@ -210,3 +210,35 @@ func TestConcurrentCreatesDoNotLoseUsers(t *testing.T) {
 		t.Fatalf("got %d users, want %d", len(users), count+1)
 	}
 }
+
+func TestUpsertExternal(t *testing.T) {
+	store := NewStore(filepath.Join(t.TempDir(), "pwd"))
+	if _, _, err := store.UpsertExternal("admin", "ldap", RoleAdmin, nil); !errors.Is(err, ErrLocalAccount) {
+		t.Fatalf("a local account must not be taken over: %v", err)
+	}
+	previous, created, err := store.UpsertExternal("carol", "ldap", RoleUser, []Permission{PermConsoleView})
+	if err != nil || previous != nil || !created.Enabled || created.Source != "ldap" {
+		t.Fatalf("create: %+v %+v %v", previous, created, err)
+	}
+	if _, ok, _ := store.Authenticate("carol", ExternalPasswordHash); ok {
+		t.Fatal("external account must never authenticate locally")
+	}
+	if _, err = store.SetPassword("carol", "some-password"); !errors.Is(err, ErrExternalManaged) {
+		t.Fatalf("set password: %v", err)
+	}
+	enabled := false
+	if _, _, err = store.Update("admin", "carol", UserPatch{Enabled: &enabled}); err != nil {
+		t.Fatal(err)
+	}
+	role := RoleAdmin
+	if _, _, err = store.Update("admin", "carol", UserPatch{Role: &role}); !errors.Is(err, ErrExternalManaged) {
+		t.Fatalf("role edit: %v", err)
+	}
+	previous, updated, err := store.UpsertExternal("carol", "ldap", RoleAdmin, nil)
+	if err != nil || previous.Role != RoleUser || updated.Role != RoleAdmin || updated.Enabled {
+		t.Fatalf("update must take the role and keep the local disable: %+v %+v %v", previous, updated, err)
+	}
+	if updated.TokenVersion != previous.TokenVersion {
+		t.Fatal("a role change from the directory must keep the session")
+	}
+}

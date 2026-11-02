@@ -1,3 +1,10 @@
+## Fork hhansen06/NanoKVM (unreleased)
+
+### Features
+
+* Added sign-in with LDAP / Active Directory and TACACS+ accounts, configured in `/etc/kvm/external-auth.yaml` or under Settings → LDAP / TACACS+ (with a connection test). Local accounts are always checked first and keep working when every directory is down; directory accounts are created on first login and take their role and permissions from group rules (LDAP) or attribute-value pairs / priv-lvl (TACACS+) on every login. See `docs/EXTERNAL_AUTH.md`
+* Switched the online update to this fork's GitHub releases (`https://github.com/hhansen06/NanoKVM/releases/latest/download`)
+
 ## 2.5.1 (2026-09-09)
 
 ### Features

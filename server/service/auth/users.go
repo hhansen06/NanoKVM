@@ -65,6 +65,7 @@ func (s *Service) ListUsers(c *gin.Context) {
 			Enabled:       user.Enabled,
 			Permissions:   permissionStrings(user.Permissions),
 			SystemAccount: user.SystemAccount,
+			Source:        user.Source,
 		})
 	}
 	rsp.OkRspWithData(c, &proto.ListUsersRsp{Users: result})

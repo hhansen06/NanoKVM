@@ -670,9 +670,84 @@ const en = {
           updateFailed: 'Update failed. Please retry.'
         }
       },
+      externalAuth: {
+        title: 'LDAP / TACACS+',
+        description:
+          'Sign in with directory accounts. Local accounts always keep working and are checked first, so the device owner can still sign in when every directory is down. Directory accounts are created on their first login; their role and permissions are taken from the directory on every login.',
+        loadFailed: 'Failed to load the settings',
+        loadErrorTitle:
+          'The configuration file could not be read; directory sign-in is off until it is saved again',
+        saveFailed: 'Failed to save the settings',
+        saved: 'Settings saved',
+        save: 'Save',
+        order: 'Order',
+        sessionHours: 'Session lifetime (hours)',
+        sessionHoursHint:
+          'How long a directory sign-in stays valid. A change in the directory (removed group, disabled account) takes effect at the latest after this time.',
+        enabled: 'Enabled',
+        timeout: 'Timeout (s)',
+        required: 'Required',
+        permissions: 'Permissions',
+        addMapping: 'Add rule',
+        defaultMapping: 'Default role',
+        defaultMappingHint:
+          'Applied when no rule matches. Without it, an account that matches no rule cannot sign in.',
+        secretStored: 'Stored — leave empty to keep (re-enter after changing the servers)',
+        noPermissions: 'No permissions',
+        ldap: {
+          urls: 'Servers',
+          urlsHint: 'ldap://host:389 or ldaps://host:636. Several servers are tried in order.',
+          insecureSkipVerify: 'Skip certificate check',
+          insecureSkipVerifyHint: 'Only for testing: accepts any server certificate.',
+          caFile: 'CA certificate file',
+          caFileHint:
+            'PEM file on the device used to verify the server certificate. Empty uses the system CAs.',
+          bindDN: 'Service account DN',
+          bindDNHint: 'Used to search for users and groups. Leave empty for anonymous search.',
+          bindPassword: 'Service account password',
+          userFilter: 'User filter',
+          userFilterHint:
+            '%s is replaced by the username. Active Directory: (&(objectClass=user)(sAMAccountName=%s)), OpenLDAP: (uid=%s)',
+          groupAttribute: 'Group attribute',
+          groupSearchFilter: 'Group search filter',
+          groupSearchFilterHint:
+            'Optional. %u = username, %d = user DN, e.g. (&(objectClass=groupOfNames)(member=%d))',
+          groupMappings: 'Group rules',
+          groupMappingsHint:
+            'A full DN or just the group name (CN). If several rules match, the strongest role wins and permissions are combined.'
+        },
+        tacacs: {
+          servers: 'Servers',
+          serversHint:
+            'host:port, usually port 49. Several servers are tried in order if one is unreachable.',
+          secret: 'Shared secret',
+          authenType: 'Authentication',
+          service: 'Authorization service',
+          serviceHint:
+            'Sent as service=<name> in the authorization request; configure the same service on the TACACS+ server.',
+          roleAttribute: 'Role attribute',
+          roleAttributeHint:
+            'Attribute-value pair with the role, e.g. nanokvm-role=admin or nanokvm-role=user',
+          permissionsAttribute: 'Permissions attribute',
+          permissionsAttributeHint:
+            'Comma-separated permissions for the user role, e.g. nanokvm-perms=console.control,power',
+          privLvlMappings: 'Privilege level rules',
+          privLvlMappingsHint:
+            "Used when the server sends no role attribute: the rule with the highest level not above the user's priv-lvl applies."
+        },
+        testTitle: 'Test sign-in',
+        testHint:
+          'Checks a login against one directory with the settings above, also unsaved ones. No account is created.',
+        testSource: 'Directory',
+        testBtn: 'Test',
+        testSuccess: 'Signed in as {{username}} with role {{role}}',
+        testFailed: 'Sign-in failed',
+        testRequestFailed: 'The test request failed'
+      },
       account: {
         title: 'Account',
         webAccount: 'Web Account Name',
+        managedBy: 'Managed by {{source}}',
         role: 'Role',
         roles: {
           admin: 'Administrator',
@@ -690,6 +765,8 @@ const en = {
           enabled: 'Enabled',
           disabled: 'Disabled',
           deviceOwner: 'Device owner',
+          externalHint:
+            'Signs in through the directory. Role, permissions and password are managed there; here it can only be disabled or removed.',
           resetPassword: 'Reset Password',
           delete: 'Delete',
           deleteConfirm: 'Delete this user and revoke all of their sessions?',

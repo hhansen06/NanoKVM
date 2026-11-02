@@ -1,5 +1,7 @@
 package proto
 
+import "NanoKVM-Server/authn/external"
+
 type LoginReq struct {
 	Username string `validate:"required"`
 	Password string `validate:"required"`
@@ -9,6 +11,7 @@ type GetAccountRsp struct {
 	Username    string   `json:"username"`
 	Role        string   `json:"role"`
 	Permissions []string `json:"permissions"`
+	Source      string   `json:"source,omitempty"`
 }
 
 type ChangePasswordReq struct {
@@ -26,6 +29,7 @@ type UserInfo struct {
 	Enabled       bool     `json:"enabled"`
 	Permissions   []string `json:"permissions"`
 	SystemAccount bool     `json:"systemAccount,omitempty"`
+	Source        string   `json:"source,omitempty"`
 }
 
 type ListPermissionsRsp struct {
@@ -66,4 +70,31 @@ type UpdateUserReq struct {
 // UpdateUserRsp says whether the change regenerated the MCP API key.
 type UpdateUserRsp struct {
 	McpKeyRotated bool `json:"mcpKeyRotated"`
+}
+
+// ExternalAuthRsp carries the LDAP/TACACS+ settings without their secrets.
+type ExternalAuthRsp struct {
+	Config          any    `json:"config"`
+	HasBindPassword bool   `json:"hasBindPassword"`
+	HasSecret       bool   `json:"hasSecret"`
+	LoadError       string `json:"loadError,omitempty"`
+}
+
+// TestExternalAuthReq runs one login against one directory. Config is the
+// (unsaved) form content; the password is encrypted like the login password.
+type TestExternalAuthReq struct {
+	Source   string           `json:"source"`
+	Username string           `json:"username"`
+	Password string           `json:"password"`
+	Config   *external.Config `json:"config"`
+}
+
+type TestExternalAuthRsp struct {
+	Success     bool     `json:"success"`
+	Unavailable bool     `json:"unavailable,omitempty"`
+	Error       string   `json:"error,omitempty"`
+	Username    string   `json:"username,omitempty"`
+	Role        string   `json:"role,omitempty"`
+	Permissions []string `json:"permissions,omitempty"`
+	Details     []string `json:"details,omitempty"`
 }

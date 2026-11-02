@@ -11,6 +11,7 @@ import {
   PaletteIcon,
   SettingsIcon,
   SmartphoneIcon,
+  UserRoundCogIcon,
   UserRoundIcon
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -26,6 +27,7 @@ import { About } from './about';
 import { Account } from './account';
 import { Appearance } from './appearance';
 import { Device } from './device';
+import { ExternalAuth } from './external-auth';
 import { MCP } from './mcp';
 import { Network } from './network';
 import { Tailscale } from './tailscale';
@@ -33,7 +35,8 @@ import { Update } from './update';
 
 export const Settings = () => {
   const { t } = useTranslation();
-  const { hasPermission } = useAuth();
+  const { account, hasPermission } = useAuth();
+  const isAdmin = account.role === 'admin';
   const canDevice = hasPermission('device');
   const canNetwork = hasPermission('network');
   const canUpdate = hasPermission('update');
@@ -74,6 +77,15 @@ export const Settings = () => {
             id: 'update',
             icon: <CircleArrowUpIcon size={16} />,
             component: <Update setIsLocked={setIsLocked} />
+          }
+        ]
+      : []),
+    ...(isAdmin
+      ? [
+          {
+            id: 'externalAuth',
+            icon: <UserRoundCogIcon size={16} />,
+            component: <ExternalAuth />
           }
         ]
       : []),

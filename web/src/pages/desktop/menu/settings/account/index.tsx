@@ -31,12 +31,23 @@ export const Account = () => {
           <span>{t(`settings.account.roles.${account.role}`)}</span>
         </div>
 
-        <div className="flex items-center justify-between">
-          <span>{t('settings.account.password')}</span>
-          <Button type="primary" onClick={changePassword}>
-            {t('settings.account.updateBtn')}
-          </Button>
-        </div>
+        {account.source ? (
+          <div className="flex items-center justify-between">
+            <span>{t('settings.account.password')}</span>
+            <span className="text-neutral-400">
+              {t('settings.account.managedBy', {
+                source: account.source === 'ldap' ? 'LDAP' : 'TACACS+'
+              })}
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <span>{t('settings.account.password')}</span>
+            <Button type="primary" onClick={changePassword}>
+              {t('settings.account.updateBtn')}
+            </Button>
+          </div>
+        )}
       </div>
 
       <Divider className="opacity-50" />

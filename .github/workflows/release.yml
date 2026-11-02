@@ -137,7 +137,8 @@ jobs:
             '' \
             "    ${SHA512}" \
             '' \
-            'To offer this build over OTA, publish it through the separate CDN workflow.')
+            'Devices running this fork pick up the newest stable release through the online update in the web UI' \
+            '(update server: https://github.com/'"${GITHUB_REPOSITORY}"'/releases/latest/download).')
 
           STATE_ARGS=(--prerelease="$IS_PRERELEASE")
           if [ "$IS_PRERELEASE" = true ]; then
@@ -165,7 +166,7 @@ jobs:
             echo "- Commit: \`$SOURCE_SHA\`"
             echo "- Action: \`$RELEASE_ACTION\`"
             echo
-            echo 'No CDN object was uploaded.'
+            echo 'Stable releases are offered to devices through the online update right away.'
           } >> "$GITHUB_STEP_SUMMARY"
 
   promote:

@@ -37,11 +37,16 @@ export type PermissionDescriptor = {
   implies?: Permission[];
 };
 
+// AccountSource names the directory that authenticates an external account.
+// Local accounts have none.
+export type AccountSource = 'ldap' | 'tacacs';
+
 export type Account = {
   username: string;
   role: UserRole;
   // The effective grants: the stored set plus everything it implies.
   permissions: Permission[];
+  source?: AccountSource;
 };
 
 export type User = Account & {
@@ -109,6 +114,90 @@ export function deleteUser(username: string, rotateMcpKey = false) {
     url: `/api/auth/users/${encodeURIComponent(username)}`,
     params: rotateMcpKey ? { rotateMcpKey: true } : undefined
   });
+}
+
+export type ExternalMapping = {
+  role: UserRole;
+  permissions: Permission[];
+};
+
+export type GroupMapping = ExternalMapping & { group: string };
+
+export type PrivLvlMapping = ExternalMapping & { minPrivLvl: number };
+
+export type LDAPConfig = {
+  enabled: boolean;
+  urls: string[];
+  startTLS: boolean;
+  caFile: string;
+  insecureSkipVerify: boolean;
+  bindDN: string;
+  // Never sent by the server; an empty value on save keeps the stored one.
+  bindPassword: string;
+  baseDN: string;
+  userFilter: string;
+  groupAttribute: string;
+  groupSearchFilter: string;
+  groupSearchBaseDN: string;
+  timeout: number;
+  groupMappings: GroupMapping[];
+  defaultMapping: ExternalMapping | null;
+};
+
+export type TACACSConfig = {
+  enabled: boolean;
+  servers: string[];
+  // Never sent by the server; an empty value on save keeps the stored one.
+  secret: string;
+  timeout: number;
+  authenType: 'pap' | 'ascii';
+  service: string;
+  roleAttribute: string;
+  permissionsAttribute: string;
+  privLvlMappings: PrivLvlMapping[];
+  defaultMapping: ExternalMapping | null;
+};
+
+export type ExternalAuthConfig = {
+  order: AccountSource[];
+  sessionDuration: number;
+  ldap: LDAPConfig;
+  tacacs: TACACSConfig;
+};
+
+export type ExternalAuthSettings = {
+  config: ExternalAuthConfig;
+  hasBindPassword: boolean;
+  hasSecret: boolean;
+  loadError?: string;
+};
+
+export type ExternalAuthTestResult = {
+  success: boolean;
+  unavailable?: boolean;
+  error?: string;
+  username?: string;
+  role?: UserRole;
+  permissions?: Permission[];
+  details?: string[];
+};
+
+export function getExternalAuth() {
+  return http.get('/api/auth/external');
+}
+
+export function setExternalAuth(config: ExternalAuthConfig) {
+  return http.request({ method: 'put', url: '/api/auth/external', data: config });
+}
+
+// password must already be encrypted like the login password.
+export function testExternalAuth(
+  source: AccountSource,
+  username: string,
+  password: string,
+  config: ExternalAuthConfig
+) {
+  return http.post('/api/auth/external/test', { source, username, password, config });
 }
 
 export function resetUserPassword(username: string, password: string) {

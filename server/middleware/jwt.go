@@ -232,8 +232,15 @@ func abortForbidden(c *gin.Context) {
 
 func GenerateJWT(username string, tokenVersion uint64) (string, error) {
 	conf := config.GetInstance()
+	return GenerateJWTWithDuration(username, tokenVersion, time.Duration(conf.JWT.RefreshTokenDuration)*time.Second)
+}
+
+// GenerateJWTWithDuration issues a session that ends after the given duration.
+// External accounts use a shorter one so a change in the directory reaches
+// the device without waiting for the regular session lifetime.
+func GenerateJWTWithDuration(username string, tokenVersion uint64, expireDuration time.Duration) (string, error) {
+	conf := config.GetInstance()
 	now := time.Now()
-	expireDuration := time.Duration(conf.JWT.RefreshTokenDuration) * time.Second
 	claims := Token{
 		Username:     username,
 		TokenVersion: tokenVersion,
