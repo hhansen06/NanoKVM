@@ -33,9 +33,15 @@ const (
 	PermUpdate   Permission = "update"
 
 	// Service grants.
-	PermMcp       Permission = "mcp"
 	PermTailscale Permission = "tailscale"
-	PermAi        Permission = "ai"
+)
+
+// Grants of the MCP service and the PicoClaw assistant, which this fork does
+// not ship. They are no longer granted or offered; an account file that still
+// carries them keeps loading, as with any grant this build does not know.
+const (
+	removedPermMcp Permission = "mcp"
+	removedPermAi  Permission = "ai"
 )
 
 // Group names the party a grant reaches. The account editor renders one section
@@ -63,8 +69,7 @@ type Risk string
 const (
 	// RiskInfo is a grant that stays within the feature it names.
 	RiskInfo Risk = "info"
-	// RiskWarn is a grant that amounts to full device control: a root shell,
-	// the AI loopback, an API key that drives input outside the web session, and
+	// RiskWarn is a grant that amounts to full device control: a root shell and
 	// a package install whose checksum the uploader supplies.
 	RiskWarn Risk = "warn"
 )
@@ -131,21 +136,9 @@ var permissionCatalog = []Descriptor{
 		Implies:    []Permission{PermConsoleView},
 	},
 	{
-		Permission: PermMcp,
-		Group:      GroupServices,
-		Risk:       RiskWarn,
-		Implies:    []Permission{PermConsoleView},
-	},
-	{
 		Permission: PermTailscale,
 		Group:      GroupServices,
 		Risk:       RiskInfo,
-		Implies:    []Permission{PermConsoleView},
-	},
-	{
-		Permission: PermAi,
-		Group:      GroupServices,
-		Risk:       RiskWarn,
 		Implies:    []Permission{PermConsoleView},
 	},
 }

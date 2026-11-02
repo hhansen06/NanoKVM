@@ -166,34 +166,6 @@ func CurrentPrincipal(c *gin.Context) (Principal, bool) {
 	return principal, ok
 }
 
-func CheckLoopbackInternalToken() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if allowByLoopbackInternalToken(c.Request) {
-			c.Next()
-			return
-		}
-		abortUnauthorized(c)
-	}
-}
-
-func CheckTokenOrLoopbackInternalToken() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if allowByLoopbackInternalToken(c.Request) {
-			c.Next()
-			return
-		}
-
-		principal, token, ok := authenticate(c)
-		if !ok {
-			abortUnauthorized(c)
-			return
-		}
-		c.Set(principalContextKey, principal)
-		c.Set(tokenContextKey, token)
-		c.Next()
-	}
-}
-
 func authenticate(c *gin.Context) (Principal, *Token, bool) {
 	conf := config.GetInstance()
 	if conf.Authentication == "disable" {

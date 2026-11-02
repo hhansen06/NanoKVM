@@ -13,9 +13,7 @@ export type Permission =
   | 'device'
   | 'network'
   | 'update'
-  | 'mcp'
-  | 'tailscale'
-  | 'ai';
+  | 'tailscale';
 
 // Group names the party a grant reaches: the console this account watches, the
 // machine behind it, the media library on this device, the device itself, or
@@ -94,11 +92,9 @@ export function createUser(
   return http.post('/api/auth/users', { username, password, role, permissions });
 }
 
-// rotateMcpKey asks the server to regenerate the device-wide MCP API key when
-// the change takes the mcp grant away; without it the key is kept.
 export function updateUser(
   username: string,
-  data: Partial<Pick<User, 'role' | 'enabled' | 'permissions'>> & { rotateMcpKey?: boolean }
+  data: Partial<Pick<User, 'role' | 'enabled' | 'permissions'>>
 ) {
   return http.request({
     method: 'put',
@@ -107,12 +103,10 @@ export function updateUser(
   });
 }
 
-export function deleteUser(username: string, rotateMcpKey = false) {
-  // DELETE carries no body the server reads, so the choice goes in the query.
+export function deleteUser(username: string) {
   return http.request({
     method: 'delete',
-    url: `/api/auth/users/${encodeURIComponent(username)}`,
-    params: rotateMcpKey ? { rotateMcpKey: true } : undefined
+    url: `/api/auth/users/${encodeURIComponent(username)}`
   });
 }
 

@@ -88,7 +88,7 @@ echo "[INFO] staging nanokvm_$VERSION"
 rm -rf "$OUT"
 mkdir -p "$STAGE"
 
-# 1. Everything tracked under kvmapp/ (init scripts, picoclaw bundle, kernel
+# 1. Everything tracked under kvmapp/ (init scripts, kernel
 #    module, jpg_stream, kvm_stream) plus whatever the support build dropped in
 #    (kvm_system, server/dl_lib). -a carries the exec bits over from git, which
 #    only matters for reading the archive by hand: install.go chmods the whole

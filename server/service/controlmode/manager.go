@@ -57,7 +57,7 @@ var (
 
 func GetManager() *Manager {
 	defaultManagerOnce.Do(func() {
-		defaultManager = NewManager(ModeFile, ModePicoclaw)
+		defaultManager = NewManager(ModeFile, ModeOff)
 	})
 	return defaultManager
 }

@@ -3,6 +3,7 @@
 ### Features
 
 * Added sign-in with LDAP / Active Directory and TACACS+ accounts, configured in `/etc/kvm/external-auth.yaml` or under Settings → LDAP / TACACS+ (with a connection test). Local accounts are always checked first and keep working when every directory is down; directory accounts are created on first login and take their role and permissions from group rules (LDAP) or attribute-value pairs / priv-lvl (TACACS+) on every login. See `docs/EXTERNAL_AUTH.md`
+* Removed the MCP service and the PicoClaw AI assistant, together with their `mcp` and `ai` permissions, the AI control mode switch and the internal loopback API. On first start the firmware stops and removes an installed PicoClaw runtime (`/etc/init.d/S96picoclaw`, `/usr/bin/picoclaw`) and deletes the MCP API key (`/etc/kvm/mcp.json`); PicoClaw's own settings in `/root/.picoclaw` are kept for the administrator to delete
 * Switched the online update to this fork's GitHub releases (`https://github.com/hhansen06/NanoKVM/releases/latest/download`)
 
 ## 2.5.1 (2026-09-09)

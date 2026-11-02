@@ -5,7 +5,6 @@ import clsx from 'clsx';
 import { useSetAtom } from 'jotai';
 import {
   BadgeInfoIcon,
-  BotIcon,
   CircleArrowUpIcon,
   NetworkIcon,
   PaletteIcon,
@@ -28,7 +27,6 @@ import { Account } from './account';
 import { Appearance } from './appearance';
 import { Device } from './device';
 import { ExternalAuth } from './external-auth';
-import { MCP } from './mcp';
 import { Network } from './network';
 import { Tailscale } from './tailscale';
 import { Update } from './update';
@@ -40,7 +38,6 @@ export const Settings = () => {
   const canDevice = hasPermission('device');
   const canNetwork = hasPermission('network');
   const canUpdate = hasPermission('update');
-  const canMcp = hasPermission('mcp');
   const canTailscale = hasPermission('tailscale');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -61,7 +58,6 @@ export const Settings = () => {
     ...(canNetwork
       ? [{ id: 'network', icon: <NetworkIcon size={16} />, component: <Network /> }]
       : []),
-    ...(canMcp ? [{ id: 'mcp', icon: <BotIcon size={16} />, component: <MCP /> }] : []),
     ...(canTailscale
       ? [
           {

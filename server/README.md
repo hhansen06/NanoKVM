@@ -78,12 +78,12 @@ carries its group, its risk, and the grants it implies:
 | target machine | `power`, `medium.attach` |
 | media library (this device) | `library.read`, `library.write` |
 | this device | `terminal`, `device`, `network`, `update` |
-| services | `mcp`, `tailscale`, `ai` |
+| services | `tailscale` |
 
 Implied grants are declared once, in the catalog, and the server resolves them before answering any
 request: `console.control` implies `console.view`, both `medium.attach` and `library.write` imply
 `library.read`, and every grant whose controls live in the console menu — `power`, `device`,
-`network`, `update`, `mcp`, `tailscale` and `ai` — implies `console.view` too, because no page
+`network`, `update` and `tailscale` — implies `console.view` too, because no page
 outside the console renders them. Consequences worth knowing:
 
 - An account can hold no console access at all. The web app then lands on a page that offers the
@@ -102,20 +102,11 @@ outside the console renders them. Consequences worth knowing:
   A medium can only be attached while a `device` holder has the virtual disk switched on, and the
   storage page says so when it is off.
 
-Four grants reach further than their names suggest and amount to full device control. The catalog
-has two risk levels, and `warn` is reserved for them: the account editor marks those four and
+Two grants reach further than their names suggest and amount to full device control. The catalog
+has two risk levels, and `warn` is reserved for them: the account editor marks those two and
 names them before the grants are saved:
 
 - `terminal` is a root shell (the same one SSH gives) and can run saved and autostart scripts.
-- `mcp` hands out a device-wide API key that drives the keyboard, mouse and screenshots from
-  outside the web session. The key is shared, so a copy keeps working after an account loses this
-  grant. Whenever a change takes the grant away (revoked, demoted, disabled or deleted), the account
-  editor warns and offers to regenerate the key, checked by default; regenerating disconnects every
-  MCP client until it is given the new key, and an administrator who keeps the key accepts that a
-  copy stays valid. The API takes the choice as `rotateMcpKey` (a body field on update, a query
-  parameter on delete) and never rotates without it.
-- `ai` drives the device through the local loopback interface, which the other grants do not
-  restrict.
 - `update` installs firmware and application packages. An offline package is checked only against
   the checksum its uploader supplies, so installing one is running code as root.
 

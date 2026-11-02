@@ -15,7 +15,6 @@ import { useTranslation } from 'react-i18next';
 import { Permission } from '@/api/auth.ts';
 import * as ls from '@/lib/localstorage.ts';
 import { menuDisabledItemsAtom } from '@/jotai/settings.ts';
-import { Robot } from '@/components/icons/robot.tsx';
 
 export const MenuIcons = () => {
   const { t } = useTranslation();
@@ -39,7 +38,6 @@ export const MenuIcons = () => {
     { key: 'terminal', icon: <TerminalSquareIcon size={16} />, permission: 'terminal' },
     { key: 'script', icon: <FileJsonIcon size={16} />, permission: 'terminal' },
     { key: 'wol', icon: <NetworkIcon size={16} />, permission: 'power' },
-    { key: 'picoclaw', icon: <Robot size={16} />, permission: 'ai' },
     { key: 'power', icon: <PowerIcon size={16} />, permission: 'power' },
     { key: 'fullscreen', icon: <MaximizeIcon size={16} />, label: 'fullscreen.toggle' },
     { key: 'collapse', icon: <XIcon size={16} />, label: 'menu.collapse' }

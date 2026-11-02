@@ -30,11 +30,11 @@ func main() {
 }
 
 func initialize() {
-	if err := config.EnsurePicoclawInternalToken(); err != nil {
-		log.Fatalf("failed to initialize picoclaw internal token: %v", err)
-	}
-
 	logger.Init()
+
+	// This fork ships without MCP and PicoClaw; retire what an earlier
+	// firmware left behind before anything else starts.
+	removeAIFeatures()
 
 	// init screen parameters
 	_ = common.GetScreen()
@@ -79,8 +79,6 @@ func run() {
 	router.Init(r)
 
 	httpAddr := utils.ListenAddr(conf.Host, strconv.Itoa(conf.Port.Http))
-	loopbackHTTPAddr := utils.ListenAddr("127.0.0.1", strconv.Itoa(conf.Port.Http))
-	needsLoopbackHTTP := utils.NeedsDedicatedLoopbackListener(conf.Host)
 
 	if conf.Proto == "https" {
 		httpsPortStr := strconv.Itoa(conf.Port.Https)
@@ -92,36 +90,10 @@ func run() {
 			}
 		}()
 
-		if needsLoopbackHTTP {
-			go func() {
-				if err := middleware.ListenAndServeLoopbackHTTPRedirect(
-					loopbackHTTPAddr,
-					httpsPortStr,
-					r,
-					router.LoopbackHTTPAllowedPaths()...,
-				); err != nil {
-					panic("start loopback http server failed")
-				}
-			}()
-		}
-
-		if err := middleware.ListenAndServeLoopbackHTTPRedirect(
-			httpAddr,
-			httpsPortStr,
-			r,
-			router.LoopbackHTTPAllowedPaths()...,
-		); err != nil {
+		if err := middleware.ListenAndServeHTTPRedirect(httpAddr, httpsPortStr); err != nil {
 			panic("start http server failed")
 		}
 	} else {
-		if needsLoopbackHTTP {
-			go func() {
-				if err := r.Run(loopbackHTTPAddr); err != nil {
-					panic("start loopback http server failed")
-				}
-			}()
-		}
-
 		if err := r.Run(httpAddr); err != nil {
 			panic("start http server failed")
 		}

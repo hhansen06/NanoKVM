@@ -17,7 +17,7 @@ func TestClosureResolvesImpliedGrants(t *testing.T) {
 		{[]Permission{PermMediumAttach}, []Permission{PermMediumAttach, PermLibraryRead}},
 		{[]Permission{PermLibraryWrite}, []Permission{PermLibraryRead, PermLibraryWrite}},
 		{[]Permission{PermTerminal}, []Permission{PermTerminal}},
-		{[]Permission{"future.grant", PermMcp}, []Permission{PermConsoleView, PermMcp, "future.grant"}},
+		{[]Permission{"future.grant", PermTailscale}, []Permission{PermConsoleView, PermTailscale, "future.grant"}},
 	}
 	for _, tc := range cases {
 		if got := Closure(tc.grants); !slices.Equal(got, tc.want) {
@@ -79,8 +79,26 @@ func TestOnlyFullControlGrantsWarn(t *testing.T) {
 			warned = append(warned, descriptor.Permission)
 		}
 	}
-	want := []Permission{PermTerminal, PermUpdate, PermMcp, PermAi}
+	want := []Permission{PermTerminal, PermUpdate}
 	if !slices.Equal(warned, want) {
 		t.Fatalf("warned grants = %v, want %v", warned, want)
+	}
+}
+
+func TestRemovedAIGrantsAreNoLongerGrantableButStillLoad(t *testing.T) {
+	for _, removed := range []Permission{removedPermMcp, removedPermAi} {
+		if IsValidPermission(removed) {
+			t.Fatalf("%q must not be in the catalog", removed)
+		}
+		if err := ValidatePermissions([]Permission{removed}); err == nil {
+			t.Fatalf("%q must not be grantable", removed)
+		}
+		if err := ValidateStoredPermissions([]Permission{PermConsoleView, removed}); err != nil {
+			t.Fatalf("an account still holding %q must keep loading: %v", removed, err)
+		}
+	}
+	user := &User{Role: RoleUser, Permissions: []Permission{removedPermMcp, removedPermAi}}
+	if got := EffectivePermissions(user); Has(got, PermConsoleView) {
+		t.Fatalf("removed grants must not imply anything any more: %v", got)
 	}
 }

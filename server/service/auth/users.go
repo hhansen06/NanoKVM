@@ -19,37 +19,6 @@ var errInvalidPassword = errors.New("invalid password")
 // package does not depend on the cgo-based HID stack.
 var SessionNotifier func(username, event, data string)
 
-// APIKeyRotator replaces the device-wide MCP API key. It is wired by the MCP
-// router for the same reason as SessionNotifier.
-var APIKeyRotator func() error
-
-// rotateAPIKeyIfLost regenerates the MCP API key when the account no longer
-// reaches it and the administrator asked for it. The key outlives the web
-// session, so a key the account copied keeps working until it is replaced;
-// replacing it disconnects every MCP client, so the account editor warns and
-// leaves the choice to the administrator. A failed rotation is reported so the
-// administrator learns that the old key still works.
-func rotateAPIKeyIfLost(previous, current []authn.Permission, requested bool) (bool, error) {
-	if !authn.Has(previous, authn.PermMcp) || authn.Has(current, authn.PermMcp) {
-		return false, nil
-	}
-	if !requested {
-		log.Warnf("mcp grant revoked; the MCP API key was kept at the administrator's request")
-		return false, nil
-	}
-	if APIKeyRotator == nil {
-		return false, nil
-	}
-	if err := APIKeyRotator(); err != nil {
-		log.Errorf("rotate MCP API key after revoking the mcp grant: %s", err)
-		return false, errAPIKeyNotRotated
-	}
-	log.Infof("MCP API key rotated after the mcp grant was revoked")
-	return true, nil
-}
-
-var errAPIKeyNotRotated = errors.New("the change was saved, but the MCP API key could not be regenerated; regenerate it from the MCP settings")
-
 func (s *Service) ListUsers(c *gin.Context) {
 	var rsp proto.Response
 	users, err := authn.DefaultStore.List()
@@ -145,7 +114,6 @@ func (s *Service) UpdateUser(c *gin.Context) {
 	// A disabled account reaches nothing, whatever it stores.
 	previousPermissions := enabledPermissions(previous)
 	currentPermissions := enabledPermissions(updated)
-	rotated, rotateErr := rotateAPIKeyIfLost(previousPermissions, currentPermissions, req.RotateMcpKey)
 
 	if updated.TokenVersion != previous.TokenVersion {
 		// Disabling the account is the only change that invalidates the login.
@@ -171,11 +139,7 @@ func (s *Service) UpdateUser(c *gin.Context) {
 			middleware.RefreshUserSessions(username, channels...)
 		}
 	}
-	if rotateErr != nil {
-		rsp.ErrRsp(c, -3, rotateErr.Error())
-		return
-	}
-	rsp.OkRspWithData(c, &proto.UpdateUserRsp{McpKeyRotated: rotated})
+	rsp.OkRsp(c)
 	log.Infof("user updated: %s", username)
 }
 
@@ -183,19 +147,12 @@ func (s *Service) DeleteUser(c *gin.Context) {
 	var rsp proto.Response
 	principal, _ := middleware.CurrentPrincipal(c)
 	username := c.Param("username")
-	previous, _ := authn.DefaultStore.Get(username)
 	if err := authn.DefaultStore.Delete(principal.Username, username); err != nil {
 		rsp.ErrRsp(c, -1, err.Error())
 		return
 	}
 	middleware.RevokeUserSessions(username)
-	// DELETE carries no body, so the choice travels in the query string.
-	rotated, err := rotateAPIKeyIfLost(enabledPermissions(previous), nil, c.Query("rotateMcpKey") == "true")
-	if err != nil {
-		rsp.ErrRsp(c, -2, err.Error())
-		return
-	}
-	rsp.OkRspWithData(c, &proto.UpdateUserRsp{McpKeyRotated: rotated})
+	rsp.OkRsp(c)
 	log.Infof("user deleted: %s", username)
 }
 
@@ -267,8 +224,6 @@ func channelsForPermissions(permissions []authn.Permission) []string {
 			channels = append(channels, middleware.SessionChannelConsole)
 		case authn.PermTerminal:
 			channels = append(channels, middleware.SessionChannelTerminal)
-		case authn.PermAi:
-			channels = append(channels, middleware.SessionChannelAi)
 		}
 	}
 	return channels

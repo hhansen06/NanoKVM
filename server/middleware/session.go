@@ -28,7 +28,6 @@ const (
 	SessionChannelConsole  = "console"  // /api/ws (input events, status pushes)
 	SessionChannelStream   = "stream"   // /api/stream/* (video signaling and frames)
 	SessionChannelTerminal = "terminal" // /api/vm/terminal
-	SessionChannelAi       = "ai"       // /api/picoclaw/gateway/ws
 )
 
 // SessionChannelForPath classifies long-lived endpoints; everything else
@@ -41,8 +40,6 @@ func SessionChannelForPath(path string) string {
 		return SessionChannelStream
 	case path == "/api/vm/terminal":
 		return SessionChannelTerminal
-	case path == "/api/picoclaw/gateway/ws":
-		return SessionChannelAi
 	default:
 		return ""
 	}

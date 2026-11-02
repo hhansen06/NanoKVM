@@ -82,9 +82,7 @@ export const handlers = [
           { id: 'device', group: 'host', risk: 'info', implies: ['console.view'] },
           { id: 'network', group: 'host', risk: 'info', implies: ['console.view'] },
           { id: 'update', group: 'host', risk: 'warn', implies: ['console.view'] },
-          { id: 'mcp', group: 'services', risk: 'warn', implies: ['console.view'] },
-          { id: 'tailscale', group: 'services', risk: 'info', implies: ['console.view'] },
-          { id: 'ai', group: 'services', risk: 'warn', implies: ['console.view'] }
+          { id: 'tailscale', group: 'services', risk: 'info', implies: ['console.view'] }
         ]
       }
     });

@@ -19,7 +19,6 @@ import { Fullscreen } from './fullscreen';
 import { Keyboard } from './keyboard';
 import { Mouse } from './mouse';
 import { Collapse, Expand } from './operations';
-import { Picoclaw } from './picoclaw';
 import { Power } from './power';
 import { Screen } from './screen';
 import { Script } from './script';
@@ -36,7 +35,6 @@ export const Menu = () => {
   const canLibrary = hasPermission('library.read');
   const canControl = hasPermission('console.control');
   const canTerminal = hasPermission('terminal');
-  const canAi = hasPermission('ai');
   const canPower = hasPermission('power');
 
   const menuDisabledItems = useAtomValue(menuDisabledItemsAtom);
@@ -132,13 +130,6 @@ export const Menu = () => {
               (canLibrary && isEnabled('storage')) ||
               (canTerminal && ['script', 'terminal'].some(isEnabled))) && (
               <Divider type="vertical" />
-            )}
-
-            {canAi && isEnabled('picoclaw') && (
-              <>
-                <Picoclaw />
-                <Divider type="vertical" />
-              </>
             )}
 
             {canPower && isEnabled('power') && (

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/auth.ts';
-import { Splitter, Tag, Tooltip } from 'antd';
+import { Tag, Tooltip } from 'antd';
 import { useAtom, useSetAtom } from 'jotai';
 import { LockIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -10,7 +10,6 @@ import { getInputRegion, setControlRegionMode } from '@/api/vm.ts';
 import { ControlRegionConfig, InputRegion } from '@/types';
 import * as storage from '@/lib/localstorage.ts';
 import { client } from '@/lib/websocket.ts';
-import { picoclawChatOpenAtom } from '@/jotai/picoclaw.ts';
 import {
   controlRegionModeAtom,
   inputRegionAtom,
@@ -29,8 +28,6 @@ import { Keyboard } from './keyboard';
 import { Menu } from './menu';
 import { Mouse } from './mouse';
 import { H264ModeNotification, Notification } from './notification.tsx';
-import { Sidebar as PicoclawSidebar } from './picoclaw';
-import { ActionOverlay } from './picoclaw/action-overlay.tsx';
 import { Screen } from './screen';
 import { AutoRegion } from './screen/auto-region.tsx';
 import {
@@ -58,10 +55,8 @@ const Console = () => {
   const { t } = useTranslation();
   const { hasPermission } = useAuth();
   const canControl = hasPermission('console.control');
-  const canAi = hasPermission('ai');
   const isBigScreen = useMediaQuery({ minWidth: 850 });
   const [activeVideoMode] = useState(getVideoMode);
-  const [picoclawSidebarWidth, setPicoclawSidebarWidth] = useState(420);
   const captureStatus = useCaptureStatus(activeVideoMode);
 
   const [videoMode, setVideoMode] = useAtom(videoModeAtom);
@@ -72,15 +67,6 @@ const Console = () => {
   const setManualRegions = useSetAtom(manualRegionsAtom);
   const setSelectedManualRegion = useSetAtom(selectedManualRegionAtom);
   const setSelectedOriginalResolution = useSetAtom(selectedOriginalResolutionAtom);
-  const [isPicoclawChatOpen, setPicoclawChatOpen] = useAtom(picoclawChatOpenAtom);
-
-  // Losing the ai grant closes the chat: its socket is dropped with the
-  // grant, so leaving the sidebar open would only show send failures.
-  useEffect(() => {
-    if (!canAi && isPicoclawChatOpen) {
-      setPicoclawChatOpen(false);
-    }
-  }, [canAi, isPicoclawChatOpen, setPicoclawChatOpen]);
 
   // Declared before the connection effect so the gate is in place before the
   // console socket can send anything. Kept separate from it because a
@@ -220,13 +206,6 @@ const Console = () => {
     videoMode
   ]);
 
-  function handleSplitterResize(sizes: number[]) {
-    const nextSidebarWidth = sizes[1];
-    if (typeof nextSidebarWidth === 'number' && nextSidebarWidth > 0) {
-      setPicoclawSidebarWidth(nextSidebarWidth);
-    }
-  }
-
   return (
     <div className="h-screen w-screen overflow-hidden bg-neutral-950">
       <Head title={t('head.desktop')} />
@@ -238,46 +217,29 @@ const Console = () => {
         <div className="relative flex h-full min-h-0 w-full min-w-0">
           <Menu />
           <div className="h-full min-h-0 w-full min-w-0">
-            <Splitter
-              className="h-full w-full"
-              style={{ height: '100%', width: '100%' }}
-              onResize={handleSplitterResize}
-            >
-              <Splitter.Panel min="45%">
-                <div className="relative h-full min-h-0 w-full min-w-0 overflow-hidden bg-black">
-                  <Screen />
-                  <CaptureStatusOverlay status={captureStatus} />
-                  {!canControl && (
-                    <Tooltip title={t('desktop.readOnlyTip')}>
-                      {/* A label over the video: the tag keeps the app's chip shape, the
+            <div className="relative h-full min-h-0 w-full min-w-0 overflow-hidden bg-black">
+              <Screen />
+              <CaptureStatusOverlay status={captureStatus} />
+              {!canControl && (
+                <Tooltip title={t('desktop.readOnlyTip')}>
+                  {/* A label over the video: the tag keeps the app's chip shape, the
                           inline style survives being drawn on top of the stream */}
-                      <Tag
-                        className="absolute left-2 top-2 z-10"
-                        style={{
-                          margin: 0,
-                          border: 'none',
-                          background: 'rgba(0, 0, 0, 0.7)',
-                          backdropFilter: 'blur(4px)'
-                        }}
-                        icon={<LockIcon size={12} />}
-                      >
-                        {t('desktop.readOnly')}
-                      </Tag>
-                    </Tooltip>
-                  )}
-                </div>
-              </Splitter.Panel>
-              <Splitter.Panel
-                size={isBigScreen && isPicoclawChatOpen ? picoclawSidebarWidth : 0}
-                min={isBigScreen && isPicoclawChatOpen ? 340 : 0}
-                max="45%"
-                resizable={isBigScreen && isPicoclawChatOpen}
-              >
-                {isBigScreen && isPicoclawChatOpen ? <PicoclawSidebar /> : null}
-              </Splitter.Panel>
-            </Splitter>
+                  <Tag
+                    className="absolute left-2 top-2 z-10"
+                    style={{
+                      margin: 0,
+                      border: 'none',
+                      background: 'rgba(0, 0, 0, 0.7)',
+                      backdropFilter: 'blur(4px)'
+                    }}
+                    icon={<LockIcon size={12} />}
+                  >
+                    {t('desktop.readOnly')}
+                  </Tag>
+                </Tooltip>
+              )}
+            </div>
           </div>
-          <ActionOverlay />
           <AutoRegion />
           <ManualRegion />
           <InputRegionOverlay />
@@ -285,12 +247,6 @@ const Console = () => {
           {canControl && <Keyboard />}
         </div>
       )}
-
-      {!isBigScreen && isPicoclawChatOpen ? (
-        <div className="fixed inset-x-0 bottom-0 top-14 z-[980] overflow-hidden bg-[#0d0d0f] shadow-2xl">
-          <PicoclawSidebar />
-        </div>
-      ) : null}
 
       {canControl && <VirtualKeyboard />}
     </div>

@@ -9,7 +9,6 @@ import (
 	"NanoKVM-Server/service/controlmode"
 	"NanoKVM-Server/service/hid"
 	"NanoKVM-Server/service/inputcontrol"
-	"NanoKVM-Server/service/picoclaw"
 	"NanoKVM-Server/service/vm/jiggler"
 
 	"github.com/gorilla/websocket"
@@ -118,9 +117,7 @@ func (c *Client) queueManualReport(queue chan hid.QueuedReport, kind inputcontro
 	ctx, cancel := context.WithTimeout(context.Background(), manualPreemptTimeout)
 	defer cancel()
 
-	reservation, err := c.manual.ReserveWithCooldown(ctx, kind, held, startCooldown, func(mode controlmode.Mode) bool {
-		return mode != controlmode.ModePicoclaw || !picoclaw.GetSessionLock().BlocksManualInput()
-	})
+	reservation, err := c.manual.ReserveWithCooldown(ctx, kind, held, startCooldown, nil)
 	if err != nil {
 		if errors.Is(err, inputcontrol.ErrManualInputBlocked) {
 			log.Debug("manual HID input dropped while PicoClaw session holds control")

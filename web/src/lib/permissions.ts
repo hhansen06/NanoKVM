@@ -16,9 +16,7 @@ const PERMISSION_KEYS: Record<Permission, string> = {
   device: 'device',
   network: 'network',
   update: 'update',
-  mcp: 'mcp',
-  tailscale: 'tailscale',
-  ai: 'ai'
+  tailscale: 'tailscale'
 };
 
 const GROUP_KEYS: Record<PermissionGroup, string> = {

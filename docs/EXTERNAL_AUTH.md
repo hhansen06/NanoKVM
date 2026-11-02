@@ -52,7 +52,7 @@ Berechtigungen für `user`:
 | `library.read` / `library.write` | Medienbibliothek lesen / verwalten |
 | `terminal` | Root-Shell & Skripte |
 | `device` / `network` / `update` | Geräte-, Netzwerk-, Update-Einstellungen |
-| `mcp` / `tailscale` / `ai` | MCP-Dienst, Tailscale, KI-Assistent |
+| `tailscale` | Tailscale |
 
 Passen mehrere Regeln, gewinnt die stärkste Rolle, die Berechtigungen werden vereinigt. Passt
 keine Regel und ist keine `defaultMapping` gesetzt, wird die Anmeldung abgelehnt.
