@@ -1,3 +1,14 @@
+> [!IMPORTANT]
+> **Dies ist ein Fork von [sipeed/NanoKVM](https://github.com/sipeed/NanoKVM)** für NanoKVM-Cube (Lite/Full) mit folgenden Änderungen:
+>
+> - **LDAP / Active Directory und TACACS+:** Anmeldung an der Web-Oberfläche mit Verzeichnis-Konten. Rolle und Rechte kommen aus LDAP-Gruppen bzw. TACACS+-Attributen (`nanokvm-role`, `nanokvm-perms`, `priv-lvl`). Lokale Konten werden immer zuerst geprüft und funktionieren auch, wenn kein Verzeichnis erreichbar ist. Konfiguration unter *Einstellungen → LDAP / TACACS+* (mit Verbindungstest) oder in `/etc/kvm/external-auth.yaml`.
+> - **MCP und PicoClaw entfernt:** Der MCP-Dienst und der KI-Assistent PicoClaw samt ihren Rechten sind ausgebaut. Beim ersten Start werden eine installierte PicoClaw-Laufzeit und der MCP-API-Key von bestehenden Geräten entfernt.
+> - **Online-Update über GitHub:** Die Firmware bezieht Updates aus den [Releases dieses Forks](https://github.com/hhansen06/NanoKVM/releases). Gebaut wird per GitHub Actions; Versionen folgen dem Schema `2.5.1xx` (Basis: Upstream 2.5.1).
+>
+> Installation: `nanokvm_<version>.tar.gz` aus einem Release per *Einstellungen → Update → Offline-Update* hochladen (setzt Original-Firmware ≥ 2.5.1 voraus). Details, Konfigurationsbeispiele (AD, OpenLDAP, tac_plus, Cisco ISE) und Release-Ablauf: **[docs/EXTERNAL_AUTH.md](docs/EXTERNAL_AUTH.md)**.
+>
+> Die folgende Beschreibung stammt aus dem Original-Projekt.
+
 # NanoKVM
 
 <div align="center">
