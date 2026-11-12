@@ -16,7 +16,6 @@ import { Quality } from './quality';
 import { Reset } from './reset.tsx';
 import { Resolution } from './resolution';
 import { Scale } from './scale';
-import { VideoMode } from './video-mode.tsx';
 
 export const Screen = () => {
   const { t } = useTranslation();
@@ -76,7 +75,6 @@ export const Screen = () => {
 
   const content = (
     <div className="flex flex-col space-y-1">
-      <VideoMode />
       <Resolution />
       <Quality quality={quality} setQuality={setQuality} />
       <Fps fps={fps} setFps={setFps} />

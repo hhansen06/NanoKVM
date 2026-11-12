@@ -21,20 +21,12 @@ import { Mouse } from './mouse';
 import { Collapse, Expand } from './operations';
 import { Power } from './power';
 import { Screen } from './screen';
-import { Script } from './script';
 import { Settings } from './settings';
-import { Storage } from './storage';
-import { Terminal } from './terminal';
-import { Wol } from './wol';
 
 export const Menu = () => {
   const nodeRef = useRef<HTMLDivElement | null>(null);
   const { hasPermission } = useAuth();
-  // Every media grant implies reading the library, so this alone decides whether
-  // the storage menu has anything to show.
-  const canLibrary = hasPermission('library.read');
   const canControl = hasPermission('console.control');
-  const canTerminal = hasPermission('terminal');
   const canPower = hasPermission('power');
 
   const menuDisabledItems = useAtomValue(menuDisabledItemsAtom);
@@ -120,17 +112,6 @@ export const Menu = () => {
             {canControl && <Keyboard />}
             <Mouse />
             <Divider type="vertical" />
-
-            {canLibrary && isEnabled('storage') && <Storage />}
-            {canTerminal && isEnabled('terminal') && <Terminal />}
-            {canTerminal && isEnabled('script') && <Script />}
-            {canPower && isEnabled('wol') && <Wol />}
-
-            {((canPower && isEnabled('wol')) ||
-              (canLibrary && isEnabled('storage')) ||
-              (canTerminal && ['script', 'terminal'].some(isEnabled))) && (
-              <Divider type="vertical" />
-            )}
 
             {canPower && isEnabled('power') && (
               <>

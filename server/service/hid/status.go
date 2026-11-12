@@ -77,6 +77,12 @@ func (s *Service) SetHidMode(c *gin.Context) {
 		return
 	}
 
+	// This fork runs in HID-only mode permanently.
+	if req.Mode != ModeHidOnly {
+		rsp.ErrRsp(c, -2, "HID-only mode is enforced")
+		return
+	}
+
 	if mode, _ := GetMode(); req.Mode == mode {
 		rsp.OkRsp(c)
 		return
@@ -104,6 +110,33 @@ func (s *Service) SetHidMode(c *gin.Context) {
 
 	log.Println("reboot system...")
 	time.Sleep(500 * time.Millisecond)
+	_ = exec.Command("reboot").Run()
+}
+
+// EnsureHidOnly forces the HID-only USB gadget. If the running gadget is not
+// HID-only, it installs the HID-only init script and reboots. The reboot is
+// skipped when the installed script is already the HID-only one, so a failure
+// to apply it cannot cause a reboot loop.
+func EnsureHidOnly() {
+	if mode, err := GetMode(); err == nil && mode == ModeHidOnly {
+		return
+	}
+
+	want, err := os.ReadFile(ModeHidOnlyScript)
+	if err != nil {
+		log.Errorf("hid-only script unavailable: %s", err)
+		return
+	}
+	if have, err := os.ReadFile(USBDevScript); err == nil && string(have) == string(want) {
+		log.Warn("hid-only script already installed but not active; not rebooting")
+		return
+	}
+
+	if err := copyModeFile(ModeHidOnlyScript); err != nil {
+		return
+	}
+
+	log.Println("enforcing HID-only mode, reboot system...")
 	_ = exec.Command("reboot").Run()
 }
 

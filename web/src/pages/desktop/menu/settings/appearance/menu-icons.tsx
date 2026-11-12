@@ -2,12 +2,8 @@ import { useAuth } from '@/contexts/auth.ts';
 import { Switch } from 'antd';
 import { useAtom } from 'jotai';
 import {
-  FileJsonIcon,
-  HardDriveIcon,
   MaximizeIcon,
-  NetworkIcon,
   PowerIcon,
-  TerminalSquareIcon,
   XIcon
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -30,14 +26,6 @@ export const MenuIcons = () => {
   };
 
   const allItems: Item[] = [
-    {
-      key: 'storage',
-      icon: <HardDriveIcon size={16} />,
-      permission: 'library.read'
-    },
-    { key: 'terminal', icon: <TerminalSquareIcon size={16} />, permission: 'terminal' },
-    { key: 'script', icon: <FileJsonIcon size={16} />, permission: 'terminal' },
-    { key: 'wol', icon: <NetworkIcon size={16} />, permission: 'power' },
     { key: 'power', icon: <PowerIcon size={16} />, permission: 'power' },
     { key: 'fullscreen', icon: <MaximizeIcon size={16} />, label: 'fullscreen.toggle' },
     { key: 'collapse', icon: <XIcon size={16} />, label: 'menu.collapse' }

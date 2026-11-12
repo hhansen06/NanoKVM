@@ -17,7 +17,6 @@ import { MenuItem } from '@/components/menu-item.tsx';
 import { OriginalResolution } from '../screen/original-resolution.tsx';
 import { Cursor } from './cursor.tsx';
 import { Direction } from './direction.tsx';
-import { HidMode } from './hid-mode.tsx';
 import { MouseMode } from './mouse-mode.tsx';
 import { ResetHid } from './reset-hid.tsx';
 import { Speed } from './speed.tsx';
@@ -71,7 +70,6 @@ export const Mouse = () => {
       {(canControl || canDevice) && <Divider style={{ margin: '10px 0' }} />}
 
       {canControl && <OriginalResolution />}
-      {canDevice && <HidMode />}
       {canDevice && <ResetHid />}
     </div>
   );

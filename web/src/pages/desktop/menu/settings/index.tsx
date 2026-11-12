@@ -20,7 +20,6 @@ import * as api from '@/api/application.ts';
 import * as ls from '@/lib/localstorage.ts';
 import { keyboardLockAtom } from '@/jotai/keyboard.ts';
 import { submenuOpenCountAtom } from '@/jotai/settings.ts';
-import { Tailscale as TailscaleIcon } from '@/components/icons/tailscale';
 
 import { About } from './about';
 import { Account } from './account';
@@ -28,7 +27,6 @@ import { Appearance } from './appearance';
 import { Device } from './device';
 import { ExternalAuth } from './external-auth';
 import { Network } from './network';
-import { Tailscale } from './tailscale';
 import { Update } from './update';
 
 export const Settings = () => {
@@ -38,7 +36,6 @@ export const Settings = () => {
   const canDevice = hasPermission('device');
   const canNetwork = hasPermission('network');
   const canUpdate = hasPermission('update');
-  const canTailscale = hasPermission('tailscale');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
@@ -57,15 +54,6 @@ export const Settings = () => {
       : []),
     ...(canNetwork
       ? [{ id: 'network', icon: <NetworkIcon size={16} />, component: <Network /> }]
-      : []),
-    ...(canTailscale
-      ? [
-          {
-            id: 'tailscale',
-            icon: <TailscaleIcon size={16} />,
-            component: <Tailscale setIsLocked={setIsLocked} />
-          }
-        ]
       : []),
     ...(canUpdate
       ? [

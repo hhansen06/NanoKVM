@@ -8,7 +8,6 @@ import { MouseJiggler } from './mouse-jiggler.tsx';
 import { Oled } from './oled.tsx';
 import { Reboot } from './reboot.tsx';
 import { Ssh } from './ssh.tsx';
-import { VirtualDevices } from './virtual-devices.tsx';
 
 export const Device = () => {
   const { t } = useTranslation();
@@ -22,10 +21,6 @@ export const Device = () => {
         <Ssh />
         <Mdns />
         <Hdmi />
-        <Divider className="opacity-50" />
-
-        {/* The emulated USB devices are device settings, like the rest of the tab */}
-        <VirtualDevices />
         <Divider className="opacity-50" />
 
         <Oled />

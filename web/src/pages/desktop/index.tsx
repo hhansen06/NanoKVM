@@ -40,15 +40,9 @@ import { InputRegionOverlay } from './screen/input-region-overlay.tsx';
 import { ManualRegion } from './screen/manual-region.tsx';
 import { VirtualKeyboard } from './virtual-keyboard';
 
+// This fork streams MJPEG only.
 function getVideoMode() {
-  const defaultVideoMode = window.RTCPeerConnection ? 'h264' : 'mjpeg';
-
-  const cookieVideoMode = storage.getVideoMode();
-  if (!cookieVideoMode || (cookieVideoMode === 'direct' && !window.VideoDecoder)) {
-    return defaultVideoMode;
-  }
-
-  return ['direct', 'h264', 'mjpeg'].includes(cookieVideoMode) ? cookieVideoMode : defaultVideoMode;
+  return 'mjpeg';
 }
 
 const Console = () => {

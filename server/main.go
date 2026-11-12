@@ -13,6 +13,7 @@ import (
 	"NanoKVM-Server/logger"
 	"NanoKVM-Server/middleware"
 	"NanoKVM-Server/router"
+	"NanoKVM-Server/service/hid"
 	"NanoKVM-Server/service/storage/diskfs"
 	"NanoKVM-Server/service/vm"
 	"NanoKVM-Server/service/vm/jiggler"
@@ -35,6 +36,9 @@ func initialize() {
 	// This fork ships without MCP and PicoClaw; retire what an earlier
 	// firmware left behind before anything else starts.
 	removeAIFeatures()
+
+	// This fork runs HID-only; switch the USB gadget over if it is not.
+	hid.EnsureHidOnly()
 
 	// init screen parameters
 	_ = common.GetScreen()
